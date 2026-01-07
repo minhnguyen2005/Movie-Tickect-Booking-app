@@ -1,0 +1,201 @@
+/* Login.css - Không dùng backdrop-filter */
+.login-page {
+  /* Background tối */
+  background: url("https://via.placeholder.com/1920x1080/222/000?text=Cinema+Background")
+    center/cover no-repeat;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Inter", sans-serif;
+}
+
+.login-card {
+  /* Thay vì backdrop-filter, ta dùng màu nền tối đậm (95% opacity) */
+  background-color: rgba(20, 20, 20, 0.95);
+  border: 1px solid #333;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 16px;
+  color: white;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+}
+
+.login-title {
+  font-size: 32px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.login-subtitle {
+  color: #888;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 12px 40px; /* Padding để tránh icon */
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: white;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: #e50914;
+}
+
+.input-wrapper .icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #888;
+}
+
+.input-wrapper .icon-right {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.forgot-pass {
+  color: #e50914;
+  text-decoration: none;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(90deg, #e50914, #ff4b55);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+}
+
+.divider {
+  text-align: center;
+  margin: 25px 0;
+  position: relative;
+}
+.divider span {
+  background: rgba(20, 20, 20, 0.95); /* Cần trùng màu nền card để che line */
+  padding: 0 10px;
+  color: #666;
+  font-size: 12px;
+  position: relative;
+  z-index: 1;
+}
+.divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background: #333;
+  z-index: 0;
+}
+
+.social-login {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-social {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.btn-social:hover {
+  background: #333;
+}
+
+.switch-account {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 14px;
+  color: #888;
+}
+.switch-account a {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.error-alert,
+.error-message {
+  background-color: rgba(229, 9, 20, 0.1);
+  color: #ff4b4b;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  margin-top: -5px;
+  font-size: 13px;
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

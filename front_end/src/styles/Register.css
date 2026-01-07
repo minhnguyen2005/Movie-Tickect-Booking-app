@@ -1,0 +1,182 @@
+/* Register.css */
+.register-container {
+  background-color: #121010;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: "Inter", sans-serif;
+  color: white;
+}
+
+.register-wrapper {
+  display: flex;
+  max-width: 1100px;
+  width: 100%;
+  gap: 60px;
+}
+
+/* Left side */
+.register-info {
+  flex: 1;
+  padding-top: 20px;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.brand::before {
+  content: "🎬";
+  color: #e50914;
+}
+
+.badge-new {
+  background: rgba(229, 9, 20, 0.2);
+  color: #e50914;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: 1px solid #e50914;
+}
+
+.register-info h1 {
+  font-size: 40px;
+  line-height: 1.2;
+  margin: 20px 0;
+}
+.highlight {
+  color: #e50914;
+}
+.desc {
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.benefit-item {
+  background: #1e1e1e;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #333;
+}
+
+/* Right side - Form */
+.register-form-container {
+  flex: 0.8;
+  /* KHÔNG DÙNG BACKDROP FILTER */
+  background-color: #1a1a1a; /* Nền đặc màu xám tối */
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid #333;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-title {
+  display: none;
+} /* Chỉ hiện ở mobile nếu cần */
+
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #ccc;
+}
+
+.dark-input {
+  width: 100%;
+  padding: 12px;
+  background: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: white;
+  box-sizing: border-box;
+}
+.dark-input:focus {
+  border-color: #e50914;
+  outline: none;
+}
+
+.pass-input {
+  position: relative;
+}
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  cursor: pointer;
+  color: #666;
+}
+
+.terms-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #888;
+  margin: 20px 0;
+}
+.terms-check span {
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-register {
+  width: 100%;
+  padding: 14px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+.btn-register:hover {
+  background: #cc0000;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #888;
+}
+.auth-footer a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* Responsive đơn giản */
+@media (max-width: 900px) {
+  .register-wrapper {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .register-info {
+    text-align: center;
+  }
+  .register-info h1 {
+    font-size: 32px;
+  }
+}

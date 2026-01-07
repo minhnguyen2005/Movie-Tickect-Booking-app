@@ -1,0 +1,315 @@
+:root {
+  --primary-color: #e50914;
+  --bg-dark: #0a0a0a;
+  --text-grey: #b3b3b3;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-dark);
+  color: white;
+}
+
+/* Navbar Container */
+.navbar {
+  display: flex;
+  justify-content: space-between; /* Đẩy 2 phần sang 2 bên */
+  align-items: center;
+  padding: 15px 40px;
+  background: rgba(0, 0, 0, 0.6); /* Nền đen mờ để nổi trên ảnh nền */
+  backdrop-filter: blur(10px); /* Hiệu ứng mờ kính (tùy chọn) */
+  position: fixed; /* Cố định trên cùng */
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
+}
+
+/* Phần bên trái: Logo + Menu */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* Khoảng cách giữa Logo và Menu */
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  color: #e50914; /* Màu đỏ cho icon */
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li a {
+  color: #e5e5e5;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.nav-links li a:hover {
+  color: #e50914;
+}
+
+/* Phần bên phải: Search + Login + Location */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Khoảng cách giữa các phần tử bên phải */
+}
+
+/* Ô tìm kiếm */
+.search-box {
+  background: #333;
+  border-radius: 20px; /* Bo tròn */
+  padding: 8px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #444;
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  color: white;
+  outline: none;
+  width: 150px; /* Độ rộng cố định */
+  font-size: 13px;
+}
+
+.search-icon {
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* Nút Đăng nhập */
+.btn-login {
+  background-color: #e50914; /* Màu đỏ chủ đạo */
+  color: white;
+  padding: 8px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.btn-login:hover {
+  background-color: #c10811;
+}
+
+/* Địa điểm */
+.location {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e5e5e5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.btn-lg {
+  padding: 12px 30px;
+  font-size: 16px;
+  margin-right: 15px;
+}
+
+/* Hero */
+.hero {
+  height: 85vh;
+  position: relative;
+  /* Thay ảnh nền ở đây */
+  background: url("https://via.placeholder.com/1920x1080?text=Dune+Background")
+    center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+}
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, #000 10%, transparent 100%),
+    linear-gradient(to top, #0a0a0a, transparent);
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 600px;
+}
+.tag-imax {
+  background: var(--primary-color);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.hero-title {
+  font-size: 56px;
+  margin: 15px 0;
+  line-height: 1.1;
+}
+.hero-desc {
+  color: #ddd;
+  font-size: 16px;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+/* Filter Bar */
+.filter-bar-container {
+  position: relative;
+  z-index: 10;
+  padding: 0 40px;
+  margin-top: -40px;
+}
+.filter-bar {
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  gap: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+.filter-bar select {
+  flex: 1;
+  padding: 10px;
+  background: #000;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 4px;
+}
+.btn-search {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0 30px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Movies */
+.section-movies {
+  padding: 40px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.section-header h2 {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 10px;
+  margin: 0;
+}
+.view-all {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 25px;
+}
+.movie-card {
+  cursor: pointer;
+}
+.poster-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.poster-wrapper img {
+  width: 100%;
+  display: block;
+  transition: transform 0.3s;
+}
+.movie-card:hover img {
+  transform: scale(1.05);
+}
+.age-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  color: white;
+}
+.t13 {
+  background-color: #e6b800;
+}
+.t18 {
+  background-color: #cc0000;
+}
+.k {
+  background-color: #00cc44;
+}
+.t16 {
+  background-color: #ff8800;
+}
+
+.movie-card h3 {
+  font-size: 16px;
+  margin: 5px 0;
+}
+.movie-card p {
+  font-size: 13px;
+  color: var(--text-grey);
+  margin: 0;
+}
+
+.footer {
+  padding: 20px 40px;
+  border-top: 1px solid #333;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 50px;
+}
