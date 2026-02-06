@@ -1,3 +1,11 @@
+:root {
+  --primary-color: #e50914;
+  --primary-color-hover: #ff1a2e;
+  --bg-dark: #0d0f14;
+  --bg-darker: #0a0b10;
+  --text-grey: #c8c8d0;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,7 +14,7 @@
 
 body {
   font-family: "Inter", sans-serif;
-  background-color: #0a0a0a;
+  background: #0d0f14;
   color: white;
 }
 

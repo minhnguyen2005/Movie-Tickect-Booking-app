@@ -10,29 +10,60 @@
   font-family: "Inter", sans-serif;
 }
 
+.auth-wrapper {
+  width: 100%;
+  max-width: 960px;
+  overflow: hidden;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.auth-slider {
+  display: flex;
+  width: 200%;
+  transition: transform 0.6s ease-in-out;
+}
+
+.auth-slider.show-login {
+  transform: translateX(0%);
+}
+
+.auth-slider.show-register {
+  transform: translateX(-50%);
+}
+
+.auth-slide {
+  width: 50%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .login-card {
-  /* Thay vì backdrop-filter, ta dùng màu nền tối đậm (95% opacity) */
-  background-color: rgba(20, 20, 20, 0.95);
-  border: 1px solid #333;
+  /* Dùng cùng style phẳng với form đăng ký */
+  background-color: rgba(5, 5, 5, 0.85);
+  border: none;
   width: 100%;
   max-width: 420px;
-  padding: 40px;
+  padding: 32px 36px;
   border-radius: 16px;
   color: white;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+  box-shadow: none;
 }
 
 .login-title {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: 22px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
 .login-subtitle {
-  color: #888;
+  color: #aaa;
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 14px;
+  margin-bottom: 24px;
+  font-size: 13px;
 }
 
 .input-group {
@@ -52,9 +83,9 @@
 
 .input-wrapper input {
   width: 100%;
-  padding: 12px 40px; /* Padding để tránh icon */
-  background: #2a2a2a;
-  border: 1px solid #444;
+  padding: 11px 40px; /* padding tương tự dark-input, chừa chỗ cho icon */
+  background: #0f0f0f;
+  border: 1px solid #333;
   border-radius: 8px;
   color: white;
   box-sizing: border-box;
@@ -172,6 +203,20 @@
   text-decoration: none;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: #e50914;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
 .error-alert,
 .error-message {
   background-color: rgba(229, 9, 20, 0.1);
@@ -197,5 +242,113 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* REGISTER SIDE (không có khung viền, thiết kế phẳng hơn) */
+.register-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: rgba(5, 5, 5, 0.85);
+  border-radius: 16px;
+  padding: 32px 36px;
+  color: #fff;
+  box-shadow: none; /* Bỏ khung/đổ bóng */
+  border: none; /* Bỏ viền */
+}
+
+.register-info-mini .brand {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.register-info-mini .badge-new {
+  display: inline-block;
+  background: rgba(229, 9, 20, 0.15);
+  color: #e50914;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(229, 9, 20, 0.6);
+  margin-bottom: 10px;
+}
+
+.register-info-mini h1 {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.register-form .form-group {
+  margin-bottom: 14px;
+}
+
+.register-form .form-group label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #ccc;
+}
+
+.register-form .dark-input {
+  width: 100%;
+  padding: 11px 12px;
+  background: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.register-form .dark-input:focus {
+  border-color: #e50914;
+  outline: none;
+}
+
+.terms-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: #999;
+  margin: 16px 0 20px;
+}
+
+.btn-register {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #e50914, #ff4b55);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+@media (max-width: 900px) {
+  .auth-slider {
+    width: 100%;
+    transform: translateX(0) !important;
+  }
+
+  .auth-slide {
+    width: 100%;
+  }
+
+  .auth-wrapper {
+    max-width: 480px;
   }
 }

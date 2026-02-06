@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -22,10 +23,8 @@ export const verifyToken = (token) => {
   }
 };
 
-// Tạo reset password token
+// Tạo reset password token (sử dụng crypto để tạo token ngẫu nhiên)
 export const generateResetToken = () => {
-  return jwt.sign({ type: "reset" }, JWT_SECRET, {
-    expiresIn: "1h",
-  });
+  return crypto.randomBytes(32).toString("hex");
 };
 
