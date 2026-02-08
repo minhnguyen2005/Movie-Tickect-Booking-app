@@ -50,16 +50,36 @@ const Admin = () => {
     is_active: 1,
   });
   const [theaters, setTheaters] = useState([]);
+  const [theaterRevenue, setTheaterRevenue] = useState([]);
+  const ticketSummary = showtimes.reduce(
+    (acc, st) => {
+      const movieId = st.movie_id ?? st.movieId ?? st.movie?.id;
+      const totalSeats = Number(st.total_seats) || 0;
+      const availableSeats =
+        st.available_seats !== undefined
+          ? Number(st.available_seats)
+          : totalSeats;
+      const soldSeats = Math.max(totalSeats - availableSeats, 0);
+      const price = Number(st.price) || 0;
+      if (movieId !== undefined && movieId !== null) {
+        acc.byMovie[movieId] = (acc.byMovie[movieId] || 0) + soldSeats;
+      }
+      acc.totalTickets += soldSeats;
+      acc.totalRevenue += soldSeats * price;
+      return acc;
+    },
+    { totalRevenue: 0, totalTickets: 0, byMovie: {} },
+  );
 
-  // Simple revenue stats placeholder (có thể nối với API thống kê sau)
-  const [stats] = useState({
-    totalRevenue: 0,
-    totalTickets: 0,
-    totalMovies: 0,
-  });
+  const stats = {
+    totalRevenue: ticketSummary.totalRevenue,
+    totalTickets: ticketSummary.totalTickets,
+    totalMovies: movies.length,
+  };
+
+  const ticketsSoldByMovie = ticketSummary.byMovie;
 
   useEffect(() => {
-    // Nếu không phải admin thì chặn
     if (!user) {
       navigate("/login");
       return;
@@ -71,7 +91,11 @@ const Admin = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (activeTab === "movies") {
+    if (activeTab === "dashboard") {
+      fetchTheaters();
+      fetchShowtimes();
+      fetchMovies();
+    } else if (activeTab === "movies") {
       fetchMovies();
     } else if (activeTab === "showtimes") {
       fetchShowtimes();
@@ -81,6 +105,41 @@ const Admin = () => {
       fetchTheaters();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "dashboard") return;
+    if (!Array.isArray(showtimes) || showtimes.length === 0) {
+      setTheaterRevenue([]);
+      return;
+    }
+    const theaterById = new Map(
+      theaters.map((theater) => [String(theater.id), theater.name]),
+    );
+    const revenueMap = new Map();
+
+    showtimes.forEach((st) => {
+      const theaterId = st.theater_id ?? st.theaterId ?? st.theater?.id;
+      const theaterName =
+        st.theater_name ||
+        st.theaterName ||
+        (theaterId !== undefined ? theaterById.get(String(theaterId)) : null) ||
+        "R?p ch?a x?c ??nh";
+      const price = Number(st.price) || 0;
+      const totalSeats = Number(st.total_seats) || 0;
+      const availableSeats =
+        st.available_seats !== undefined
+          ? Number(st.available_seats)
+          : totalSeats;
+      const soldSeats = Math.max(totalSeats - availableSeats, 0);
+      const revenue = soldSeats * price;
+      revenueMap.set(theaterName, (revenueMap.get(theaterName) || 0) + revenue);
+    });
+
+    const data = Array.from(revenueMap.entries())
+      .map(([name, revenue]) => ({ name, revenue }))
+      .sort((a, b) => b.revenue - a.revenue);
+    setTheaterRevenue(data);
+  }, [activeTab, showtimes, theaters]);
 
   const fetchMovies = async () => {
     try {
@@ -134,9 +193,7 @@ const Admin = () => {
       title: movie.title || "",
       description: movie.description || "",
       duration: movie.duration || 120,
-      release_date: movie.release_date
-        ? movie.release_date.slice(0, 10)
-        : "",
+      release_date: movie.release_date ? movie.release_date.slice(0, 10) : "",
       age_rating: movie.age_rating || "K",
       poster_url: movie.poster_url || "",
       banner_url: movie.banner_url || "",
@@ -370,7 +427,6 @@ const Admin = () => {
 
   return (
     <div className="admin-layout">
-      {/* Thanh top: logo + search */}
       <header className="admin-topbar">
         <div className="admin-topbar-left">
           <div className="admin-logo-main">
@@ -387,10 +443,18 @@ const Admin = () => {
           </div>
         </div>
         <div className="admin-topbar-right">
-          <button type="button" className="topbar-icon-btn" aria-label="Thông báo">
+          <button
+            type="button"
+            className="topbar-icon-btn"
+            aria-label="Thông báo"
+          >
             <FaBell />
           </button>
-          <button type="button" className="topbar-icon-btn" aria-label="Cài đặt">
+          <button
+            type="button"
+            className="topbar-icon-btn"
+            aria-label="Cài đặt"
+          >
             <FaCog />
           </button>
           <div className="topbar-avatar">
@@ -404,7 +468,6 @@ const Admin = () => {
       </header>
 
       <div className="admin-body">
-        {/* Sidebar */}
         <aside className="admin-sidebar">
           <div className="admin-sidebar-header">
             <div className="admin-sidebar-title">DASHBOARD</div>
@@ -459,7 +522,9 @@ const Admin = () => {
             <div className="admin-current-user">
               <FaUserCircle className="admin-user-avatar" />
               <div>
-                <div className="admin-user-name">{user.fullName || "Admin"}</div>
+                <div className="admin-user-name">
+                  {user.fullName || "Admin"}
+                </div>
                 <div className="admin-user-role">Quản trị viên</div>
               </div>
             </div>
@@ -476,7 +541,6 @@ const Admin = () => {
           </div>
         </aside>
 
-      {/* Main content */}
         <div className="admin-main">
           <div className="admin-page">
             <div className="admin-header">
@@ -490,472 +554,527 @@ const Admin = () => {
               </div>
             </div>
 
-          {/* Dashboard stats */}
-          <div className="admin-stats">
-            <div className="admin-stat-card primary">
-              <div className="stat-title">Tổng doanh thu</div>
-              <div className="stat-value">
-                {stats.totalRevenue.toLocaleString("vi-VN")}đ
-              </div>
-              <div className="stat-sub">Sẽ kết nối dữ liệu thực sau</div>
-            </div>
-            <div className="admin-stat-card">
-              <div className="stat-title">Vé đã bán</div>
-              <div className="stat-value">
-                {stats.totalTickets.toLocaleString("vi-VN")}
-              </div>
-              <div className="stat-sub">Tổng vé đã thanh toán</div>
-            </div>
-            <div className="admin-stat-card">
-              <div className="stat-title">Số phim</div>
-              <div className="stat-value">
-                {movies.length.toLocaleString("vi-VN")}
-              </div>
-              <div className="stat-sub">Phim trong hệ thống</div>
-            </div>
-          </div>
-
-          {/* Tab content */}
-          <div className="admin-tab-content">
-            {activeTab === "dashboard" && (
-              <div className="admin-dashboard-grid">
-                <div className="admin-card large">
-                  <div className="admin-card-header">
-                    <h2>Tăng trưởng doanh thu</h2>
-                    <span className="badge-success">+15% so với tháng trước</span>
-                  </div>
-                  <div className="admin-chart-placeholder">
-                    <span>Biểu đồ doanh thu 6 tháng gần nhất (demo)</span>
-                  </div>
+            {/* Dashboard stats */}
+            <div className="admin-stats">
+              <div className="admin-stat-card primary">
+                <div className="stat-title">Tổng doanh thu</div>
+                <div className="stat-value">
+                  {stats.totalRevenue.toLocaleString("vi-VN")}đ
                 </div>
+                <div className="stat-sub">T?ng doanh thu t? v? ?? b?n</div>
+              </div>
+              <div className="admin-stat-card">
+                <div className="stat-title">Vé đã bán</div>
+                <div className="stat-value">
+                  {stats.totalTickets.toLocaleString("vi-VN")}
+                </div>
+                <div className="stat-sub">Tổng vé đã thanh toán</div>
+              </div>
+              <div className="admin-stat-card">
+                <div className="stat-title">Số phim</div>
+                <div className="stat-value">
+                  {movies.length.toLocaleString("vi-VN")}
+                </div>
+                <div className="stat-sub">Phim trong hệ thống</div>
+              </div>
+            </div>
 
-                <div className="admin-card">
-                  <div className="admin-card-header">
-                    <h2>Phim ăn khách</h2>
-                    <span className="badge-muted">Theo số lượng vé đã bán</span>
-                  </div>
-                  <ul className="admin-top-movies">
-                    {movies.slice(0, 5).map((m, index) => (
-                      <li key={m.id || index} className="top-movie-item">
-                        <div className="top-movie-info">
-                          <span className="top-movie-rank">#{index + 1}</span>
-                          <span className="top-movie-title">{m.title}</span>
+            {/* Tab content */}
+            <div className="admin-tab-content">
+              {activeTab === "dashboard" && (
+                <div className="admin-dashboard-grid">
+                  <div className="admin-card large">
+                    <div className="admin-card-header">
+                      <h2>Doanh thu theo rạp</h2>
+                      <span className="badge-muted">
+                        Tổng hợp theo ghế đã bán
+                      </span>
+                    </div>
+                    <div className="admin-revenue-chart">
+                      {theaterRevenue.length > 0 ? (
+                        <div className="admin-bar-chart">
+                          {theaterRevenue.map((item) => {
+                            const maxRevenue = theaterRevenue[0]?.revenue || 1;
+                            const width = Math.max(
+                              6,
+                              Math.round((item.revenue / maxRevenue) * 100),
+                            );
+                            return (
+                              <div className="bar-item" key={item.name}>
+                                <div className="bar-label">{item.name}</div>
+                                <div className="bar-track">
+                                  <div
+                                    className="bar-fill"
+                                    style={{ width: `${width}%` }}
+                                  />
+                                </div>
+                                <div className="bar-value">
+                                  {item.revenue.toLocaleString("vi-VN")}đ
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                        <span className="top-movie-meta">
-                          {m.duration || 120} phút •{" "}
-                          {m.release_date
-                            ? new Date(m.release_date).toLocaleDateString("vi-VN")
-                            : "Chưa có ngày"}
-                        </span>
-                      </li>
-                    ))}
-                    {movies.length === 0 && (
-                      <li className="top-movie-empty">
-                        Chưa có dữ liệu phim. Hãy thêm phim ở tab Quản lý phim.
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            )}
+                      ) : (
+                        <div className="admin-chart-empty">
+                          Chưa có dữ liệu doanh thu theo rạp.
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-        {activeTab === "movies" && (
-          <div className="admin-movies">
-            <div className="admin-movies-layout">
-              <form className="movie-form" onSubmit={handleSubmitMovie}>
-                <h2>{editingMovieId ? "Sửa phim" : "Thêm phim mới"}</h2>
-                <label>
-                  Tên phim
-                  <input
-                    type="text"
-                    name="title"
-                    value={movieForm.title}
-                    onChange={handleMovieInputChange}
-                    required
-                  />
-                </label>
-                <label>
-                  Mô tả
-                  <textarea
-                    name="description"
-                    value={movieForm.description}
-                    onChange={handleMovieInputChange}
-                    rows={4}
-                    required
-                  />
-                </label>
-                <div className="form-row">
-                  <label>
-                    Thời lượng (phút)
-                    <input
-                      type="number"
-                      name="duration"
-                      value={movieForm.duration}
-                      onChange={handleMovieInputChange}
-                      min={1}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Ngày khởi chiếu
-                    <input
-                      type="date"
-                      name="release_date"
-                      value={movieForm.release_date}
-                      onChange={handleMovieInputChange}
-                      required
-                    />
-                  </label>
-                </div>
-                <div className="form-row">
-                  <label>
-                    Giới hạn tuổi
-                    <select
-                      name="age_rating"
-                      value={movieForm.age_rating}
-                      onChange={handleMovieInputChange}
-                    >
-                      <option value="K">K</option>
-                      <option value="T13">T13</option>
-                      <option value="T16">T16</option>
-                      <option value="T18">T18</option>
-                    </select>
-                  </label>
-                  <label>
-                    Đang chiếu
-                    <select
-                      name="is_showing"
-                      value={movieForm.is_showing}
-                      onChange={handleMovieInputChange}
-                    >
-                      <option value={1}>Có</option>
-                      <option value={0}>Không</option>
-                    </select>
-                  </label>
-                </div>
-                <label>
-                  Poster URL
-                  <input
-                    type="text"
-                    name="poster_url"
-                    value={movieForm.poster_url}
-                    onChange={handleMovieInputChange}
-                  />
-                </label>
-                <label>
-                  Banner URL
-                  <input
-                    type="text"
-                    name="banner_url"
-                    value={movieForm.banner_url}
-                    onChange={handleMovieInputChange}
-                  />
-                </label>
-                <label>
-                  Trailer URL
-                  <input
-                    type="text"
-                    name="trailer_url"
-                    value={movieForm.trailer_url}
-                    onChange={handleMovieInputChange}
-                  />
-                </label>
-
-                <div className="movie-form-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={resetMovieForm}
-                    disabled={savingMovie}
-                  >
-                    Làm mới
-                  </button>
-                  <button type="submit" className="btn-primary" disabled={savingMovie}>
-                    {savingMovie
-                      ? "Đang lưu..."
-                      : editingMovieId
-                      ? "Cập nhật phim"
-                      : "Thêm phim"}
-                  </button>
-                </div>
-              </form>
-
-              <div className="movie-list">
-                <h2>Danh sách phim trong hệ thống</h2>
-                {loadingMovies ? (
-                  <p>Đang tải...</p>
-                ) : movies.length === 0 ? (
-                  <p>Chưa có phim nào trong hệ thống.</p>
-                ) : (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Tên phim</th>
-                        <th>Khởi chiếu</th>
-                        <th>Thời lượng</th>
-                        <th>Đang chiếu</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {movies.map((m) => (
-                        <tr key={m.id}>
-                          <td>{m.id}</td>
-                          <td>{m.title}</td>
-                          <td>
+                  <div className="admin-card">
+                    <div className="admin-card-header">
+                      <h2>Phim ăn khách</h2>
+                      <span className="badge-muted">
+                        Theo số lượng vé đã bán
+                      </span>
+                    </div>
+                    <ul className="admin-top-movies">
+                      {movies.slice(0, 5).map((m, index) => (
+                        <li key={m.id || index} className="top-movie-item">
+                          <div className="top-movie-info">
+                            <span className="top-movie-rank">#{index + 1}</span>
+                            <span className="top-movie-title">{m.title}</span>
+                            <span className="top-movie-sold">
+                              {" "}
+                              {(ticketsSoldByMovie[m.id] || 0).toLocaleString(
+                                "vi-VN",
+                              )}{" "}
+                              vé
+                            </span>
+                          </div>
+                          <span className="top-movie-meta">
+                            {m.duration || 120} phút •{" "}
                             {m.release_date
-                              ? new Date(m.release_date).toLocaleDateString("vi-VN")
-                              : "-"}
-                          </td>
-                          <td>{m.duration} phút</td>
-                          <td>{m.is_showing ? "Có" : "Không"}</td>
-                          <td>
-                            <button
-                              className="btn-link"
-                              onClick={() => handleEditMovie(m)}
-                            >
-                              Sửa
-                            </button>
-                            <button
-                              className="btn-link danger"
-                              onClick={() => handleDeleteMovie(m.id)}
-                            >
-                              Xóa
-                            </button>
-                          </td>
-                        </tr>
+                              ? new Date(m.release_date).toLocaleDateString(
+                                  "vi-VN",
+                                )
+                              : "Chưa có ngày"}
+                          </span>
+                        </li>
                       ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
+                      {movies.length === 0 && (
+                        <li className="top-movie-empty">
+                          Chưa có dữ liệu phim. Hãy thêm phim ở tab Quản lý
+                          phim.
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "movies" && (
+                <div className="admin-movies">
+                  <div className="admin-movies-layout">
+                    <form className="movie-form" onSubmit={handleSubmitMovie}>
+                      <h2>{editingMovieId ? "Sửa phim" : "Thêm phim mới"}</h2>
+                      <label>
+                        Tên phim
+                        <input
+                          type="text"
+                          name="title"
+                          value={movieForm.title}
+                          onChange={handleMovieInputChange}
+                          required
+                        />
+                      </label>
+                      <label>
+                        Mô tả
+                        <textarea
+                          name="description"
+                          value={movieForm.description}
+                          onChange={handleMovieInputChange}
+                          rows={4}
+                          required
+                        />
+                      </label>
+                      <div className="form-row">
+                        <label>
+                          Thời lượng (phút)
+                          <input
+                            type="number"
+                            name="duration"
+                            value={movieForm.duration}
+                            onChange={handleMovieInputChange}
+                            min={1}
+                            required
+                          />
+                        </label>
+                        <label>
+                          Ngày khởi chiếu
+                          <input
+                            type="date"
+                            name="release_date"
+                            value={movieForm.release_date}
+                            onChange={handleMovieInputChange}
+                            required
+                          />
+                        </label>
+                      </div>
+                      <div className="form-row">
+                        <label>
+                          Giới hạn tuổi
+                          <select
+                            name="age_rating"
+                            value={movieForm.age_rating}
+                            onChange={handleMovieInputChange}
+                          >
+                            <option value="K">K</option>
+                            <option value="T13">T13</option>
+                            <option value="T16">T16</option>
+                            <option value="T18">T18</option>
+                          </select>
+                        </label>
+                        <label>
+                          Đang chiếu
+                          <select
+                            name="is_showing"
+                            value={movieForm.is_showing}
+                            onChange={handleMovieInputChange}
+                          >
+                            <option value={1}>Có</option>
+                            <option value={0}>Không</option>
+                          </select>
+                        </label>
+                      </div>
+                      <label>
+                        Poster URL
+                        <input
+                          type="text"
+                          name="poster_url"
+                          value={movieForm.poster_url}
+                          onChange={handleMovieInputChange}
+                        />
+                      </label>
+                      <label>
+                        Banner URL
+                        <input
+                          type="text"
+                          name="banner_url"
+                          value={movieForm.banner_url}
+                          onChange={handleMovieInputChange}
+                        />
+                      </label>
+                      <label>
+                        Trailer URL
+                        <input
+                          type="text"
+                          name="trailer_url"
+                          value={movieForm.trailer_url}
+                          onChange={handleMovieInputChange}
+                        />
+                      </label>
+
+                      <div className="movie-form-actions">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={resetMovieForm}
+                          disabled={savingMovie}
+                        >
+                          Làm mới
+                        </button>
+                        <button
+                          type="submit"
+                          className="btn-primary"
+                          disabled={savingMovie}
+                        >
+                          {savingMovie
+                            ? "Đang lưu..."
+                            : editingMovieId
+                              ? "Cập nhật phim"
+                              : "Thêm phim"}
+                        </button>
+                      </div>
+                    </form>
+
+                    <div className="movie-list">
+                      <h2>Danh sách phim trong hệ thống</h2>
+                      {loadingMovies ? (
+                        <p>Đang tải...</p>
+                      ) : movies.length === 0 ? (
+                        <p>Chưa có phim nào trong hệ thống.</p>
+                      ) : (
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>ID</th>
+                              <th>Tên phim</th>
+                              <th>Khởi chiếu</th>
+                              <th>Thời lượng</th>
+                              <th>Đang chiếu</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {movies.map((m) => (
+                              <tr key={m.id}>
+                                <td>{m.id}</td>
+                                <td>{m.title}</td>
+                                <td>
+                                  {m.release_date
+                                    ? new Date(
+                                        m.release_date,
+                                      ).toLocaleDateString("vi-VN")
+                                    : "-"}
+                                </td>
+                                <td>{m.duration} phút</td>
+                                <td>{m.is_showing ? "Có" : "Không"}</td>
+                                <td>
+                                  <button
+                                    className="btn-link"
+                                    onClick={() => handleEditMovie(m)}
+                                  >
+                                    Sửa
+                                  </button>
+                                  <button
+                                    className="btn-link danger"
+                                    onClick={() => handleDeleteMovie(m.id)}
+                                  >
+                                    Xóa
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "theaters" && (
+                <div>
+                  <p>
+                    Tab quản lý rạp sẽ dùng các endpoint `/api/admin/theaters`.
+                    Có thể thêm form và bảng tương tự Movies.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === "showtimes" && (
+                <div className="admin-showtimes">
+                  <div className="admin-showtimes-layout">
+                    <form
+                      className="showtime-form"
+                      onSubmit={handleSubmitShowtime}
+                    >
+                      <h2>
+                        {editingShowtimeId
+                          ? "Sửa lịch chiếu"
+                          : "Thêm lịch chiếu mới"}
+                      </h2>
+                      <label>
+                        Phim
+                        <select
+                          name="movie_id"
+                          value={showtimeForm.movie_id}
+                          onChange={handleShowtimeInputChange}
+                          required
+                        >
+                          <option value="">-- Chọn phim --</option>
+                          {movies.map((movie) => (
+                            <option key={movie.id} value={movie.id}>
+                              {movie.title}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Rạp chiếu
+                        <select
+                          name="theater_id"
+                          value={showtimeForm.theater_id}
+                          onChange={handleShowtimeInputChange}
+                          required
+                        >
+                          <option value="">-- Chọn rạp --</option>
+                          {theaters.map((theater) => (
+                            <option key={theater.id} value={theater.id}>
+                              {theater.name} - {theater.address}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <div className="form-row">
+                        <label>
+                          Ngày chiếu
+                          <input
+                            type="date"
+                            name="show_date"
+                            value={showtimeForm.show_date}
+                            onChange={handleShowtimeInputChange}
+                            required
+                          />
+                        </label>
+                        <label>
+                          Giờ chiếu
+                          <input
+                            type="time"
+                            name="show_time"
+                            value={showtimeForm.show_time}
+                            onChange={handleShowtimeInputChange}
+                            required
+                          />
+                        </label>
+                      </div>
+                      <div className="form-row">
+                        <label>
+                          Giá vé (VNĐ)
+                          <input
+                            type="number"
+                            name="price"
+                            value={showtimeForm.price}
+                            onChange={handleShowtimeInputChange}
+                            min={0}
+                            required
+                          />
+                        </label>
+                        <label>
+                          Tổng số ghế
+                          <input
+                            type="number"
+                            name="total_seats"
+                            value={showtimeForm.total_seats}
+                            onChange={handleShowtimeInputChange}
+                            min={1}
+                            required
+                          />
+                        </label>
+                      </div>
+                      <label>
+                        Trạng thái
+                        <select
+                          name="is_active"
+                          value={showtimeForm.is_active}
+                          onChange={handleShowtimeInputChange}
+                        >
+                          <option value={1}>Hoạt động</option>
+                          <option value={0}>Tạm ngưng</option>
+                        </select>
+                      </label>
+
+                      <div className="showtime-form-actions">
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={resetShowtimeForm}
+                          disabled={savingShowtime}
+                        >
+                          Làm mới
+                        </button>
+                        <button
+                          type="submit"
+                          className="btn-primary"
+                          disabled={savingShowtime}
+                        >
+                          {savingShowtime
+                            ? "Đang lưu..."
+                            : editingShowtimeId
+                              ? "Cập nhật lịch chiếu"
+                              : "Thêm lịch chiếu"}
+                        </button>
+                      </div>
+                    </form>
+
+                    <div className="showtime-list">
+                      <h2>Danh sách lịch chiếu</h2>
+                      {loadingShowtimes ? (
+                        <p>Đang tải...</p>
+                      ) : showtimes.length === 0 ? (
+                        <p>Chưa có lịch chiếu nào trong hệ thống.</p>
+                      ) : (
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>ID</th>
+                              <th>Phim</th>
+                              <th>Rạp</th>
+                              <th>Ngày</th>
+                              <th>Giờ</th>
+                              <th>Giá</th>
+                              <th>Ghế trống</th>
+                              <th>Trạng thái</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {showtimes.map((st) => (
+                              <tr key={st.id}>
+                                <td>{st.id}</td>
+                                <td>{st.movie_title || "-"}</td>
+                                <td>{st.theater_name || "-"}</td>
+                                <td>
+                                  {st.show_date
+                                    ? new Date(st.show_date).toLocaleDateString(
+                                        "vi-VN",
+                                      )
+                                    : "-"}
+                                </td>
+                                <td>{st.show_time || "-"}</td>
+                                <td>
+                                  {st.price
+                                    ? st.price.toLocaleString("vi-VN") + "đ"
+                                    : "-"}
+                                </td>
+                                <td>
+                                  {st.available_seats !== undefined
+                                    ? `${st.available_seats}/${st.total_seats || 0}`
+                                    : "-"}
+                                </td>
+                                <td>
+                                  {st.is_active ? "Hoạt động" : "Tạm ngưng"}
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn-link"
+                                    onClick={() => handleEditShowtime(st)}
+                                  >
+                                    Sửa
+                                  </button>
+                                  <button
+                                    className="btn-link danger"
+                                    onClick={() => handleDeleteShowtime(st.id)}
+                                  >
+                                    Xóa
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "feedback" && (
+                <div>
+                  <p>
+                    Tab Feedback sẽ hiển thị góp ý từ người dùng. Hiện chưa có
+                    API, có thể bổ sung sau.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === "notifications" && (
+                <div>
+                  <p>
+                    Tab Thông báo dùng để gửi thông báo hệ thống tới người dùng.
+                    Hiện là placeholder, sẽ kết nối API sau.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-
-        {activeTab === "theaters" && (
-          <div>
-            <p>
-              Tab quản lý rạp sẽ dùng các endpoint `/api/admin/theaters`. Có thể
-              thêm form và bảng tương tự Movies.
-            </p>
-          </div>
-        )}
-
-        {activeTab === "showtimes" && (
-          <div className="admin-showtimes">
-            <div className="admin-showtimes-layout">
-              <form className="showtime-form" onSubmit={handleSubmitShowtime}>
-                <h2>
-                  {editingShowtimeId ? "Sửa lịch chiếu" : "Thêm lịch chiếu mới"}
-                </h2>
-                <label>
-                  Phim
-                  <select
-                    name="movie_id"
-                    value={showtimeForm.movie_id}
-                    onChange={handleShowtimeInputChange}
-                    required
-                  >
-                    <option value="">-- Chọn phim --</option>
-                    {movies.map((movie) => (
-                      <option key={movie.id} value={movie.id}>
-                        {movie.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Rạp chiếu
-                  <select
-                    name="theater_id"
-                    value={showtimeForm.theater_id}
-                    onChange={handleShowtimeInputChange}
-                    required
-                  >
-                    <option value="">-- Chọn rạp --</option>
-                    {theaters.map((theater) => (
-                      <option key={theater.id} value={theater.id}>
-                        {theater.name} - {theater.address}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="form-row">
-                  <label>
-                    Ngày chiếu
-                    <input
-                      type="date"
-                      name="show_date"
-                      value={showtimeForm.show_date}
-                      onChange={handleShowtimeInputChange}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Giờ chiếu
-                    <input
-                      type="time"
-                      name="show_time"
-                      value={showtimeForm.show_time}
-                      onChange={handleShowtimeInputChange}
-                      required
-                    />
-                  </label>
-                </div>
-                <div className="form-row">
-                  <label>
-                    Giá vé (VNĐ)
-                    <input
-                      type="number"
-                      name="price"
-                      value={showtimeForm.price}
-                      onChange={handleShowtimeInputChange}
-                      min={0}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Tổng số ghế
-                    <input
-                      type="number"
-                      name="total_seats"
-                      value={showtimeForm.total_seats}
-                      onChange={handleShowtimeInputChange}
-                      min={1}
-                      required
-                    />
-                  </label>
-                </div>
-                <label>
-                  Trạng thái
-                  <select
-                    name="is_active"
-                    value={showtimeForm.is_active}
-                    onChange={handleShowtimeInputChange}
-                  >
-                    <option value={1}>Hoạt động</option>
-                    <option value={0}>Tạm ngưng</option>
-                  </select>
-                </label>
-
-                <div className="showtime-form-actions">
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={resetShowtimeForm}
-                    disabled={savingShowtime}
-                  >
-                    Làm mới
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    disabled={savingShowtime}
-                  >
-                    {savingShowtime
-                      ? "Đang lưu..."
-                      : editingShowtimeId
-                      ? "Cập nhật lịch chiếu"
-                      : "Thêm lịch chiếu"}
-                  </button>
-                </div>
-              </form>
-
-              <div className="showtime-list">
-                <h2>Danh sách lịch chiếu</h2>
-                {loadingShowtimes ? (
-                  <p>Đang tải...</p>
-                ) : showtimes.length === 0 ? (
-                  <p>Chưa có lịch chiếu nào trong hệ thống.</p>
-                ) : (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Phim</th>
-                        <th>Rạp</th>
-                        <th>Ngày</th>
-                        <th>Giờ</th>
-                        <th>Giá</th>
-                        <th>Ghế trống</th>
-                        <th>Trạng thái</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {showtimes.map((st) => (
-                        <tr key={st.id}>
-                          <td>{st.id}</td>
-                          <td>{st.movie_title || "-"}</td>
-                          <td>{st.theater_name || "-"}</td>
-                          <td>
-                            {st.show_date
-                              ? new Date(st.show_date).toLocaleDateString("vi-VN")
-                              : "-"}
-                          </td>
-                          <td>{st.show_time || "-"}</td>
-                          <td>
-                            {st.price
-                              ? st.price.toLocaleString("vi-VN") + "đ"
-                              : "-"}
-                          </td>
-                          <td>
-                            {st.available_seats !== undefined
-                              ? `${st.available_seats}/${st.total_seats || 0}`
-                              : "-"}
-                          </td>
-                          <td>{st.is_active ? "Hoạt động" : "Tạm ngưng"}</td>
-                          <td>
-                            <button
-                              className="btn-link"
-                              onClick={() => handleEditShowtime(st)}
-                            >
-                              Sửa
-                            </button>
-                            <button
-                              className="btn-link danger"
-                              onClick={() => handleDeleteShowtime(st.id)}
-                            >
-                              Xóa
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "feedback" && (
-          <div>
-            <p>
-              Tab Feedback sẽ hiển thị góp ý từ người dùng. Hiện chưa có API, có
-              thể bổ sung sau.
-            </p>
-          </div>
-        )}
-
-        {activeTab === "notifications" && (
-          <div>
-            <p>
-              Tab Thông báo dùng để gửi thông báo hệ thống tới người dùng. Hiện
-              là placeholder, sẽ kết nối API sau.
-            </p>
-          </div>
-        )}
           </div>
         </div>
-      </div>
       </div>
     </div>
   );
 };
 
 export default Admin;
-
-

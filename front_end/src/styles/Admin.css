@@ -400,6 +400,61 @@
   color: #d1d5db;
 }
 
+.admin-revenue-chart {
+  padding: 6px 2px 4px;
+}
+
+.admin-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bar-item {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) minmax(0, 2.8fr) minmax(90px, 0.7fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-label {
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+.bar-track {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(30, 41, 59, 0.9);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f97316, #ef4444);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.45);
+}
+
+.bar-value {
+  font-size: 12px;
+  color: #fca5a5;
+  text-align: right;
+}
+
+.admin-chart-empty {
+  height: 190px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
 .admin-top-movies {
   list-style: none;
   margin: 0;
@@ -440,6 +495,11 @@
 
 .top-movie-title {
   font-weight: 500;
+}
+
+.top-movie-sold {
+  font-size: 12px;
+  color: #fca5a5;
 }
 
 .top-movie-meta {
@@ -676,6 +736,13 @@
   .admin-showtimes .admin-showtimes-layout {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .bar-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .bar-value {
+    text-align: left;
+  }
 }
-
-
