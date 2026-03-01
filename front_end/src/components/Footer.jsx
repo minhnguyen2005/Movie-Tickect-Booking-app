@@ -7,8 +7,6 @@ import {
   FaYoutube,
   FaTwitter,
   FaEnvelope,
-  FaPhone,
-  FaMapMarkerAlt,
   FaGlobe,
 } from "react-icons/fa";
 
@@ -158,4 +156,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
