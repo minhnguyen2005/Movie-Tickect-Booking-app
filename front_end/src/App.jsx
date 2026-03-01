@@ -17,6 +17,7 @@ const Booking = lazy(() => import("./pages/Booking"));
 const Payment = lazy(() => import("./pages/Payment"));
 const Admin = lazy(() => import("./pages/Admin"));
 const TransactionHistory = lazy(() => import("./pages/TransactionHistory"));
+const Showtimes = lazy(() => import("./pages/Showtimes"));
 
 function App() {
   const location = useLocation();
@@ -34,6 +35,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
+            <Route path="/showtimes" element={<Showtimes />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<EditProfile />} />

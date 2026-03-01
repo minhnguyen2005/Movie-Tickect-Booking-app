@@ -1,13 +1,13 @@
 :root {
   --primary-color: #e50914;
   --primary-color-hover: #ff1a2e;
-  --bg-dark: #0d0f14;
-  --bg-darker: #0a0b10;
+  --bg-dark: #000;
+  --bg-darker: #000;
   --text-grey: #c8c8d0;
 }
 
 .footer {
-  background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a1a 100%);
+  background: #000;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 80px;
   padding: 60px 0 30px;

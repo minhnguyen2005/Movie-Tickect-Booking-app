@@ -378,6 +378,16 @@ const MovieDetail = () => {
         total: 0,
         distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
       };
+  const productionDirector =
+    String(movie.director || "").trim() ||
+    (Array.isArray(movie.cast)
+      ? movie.cast
+          .filter((c) => c.role === "Director" || c.role === "Đạo diễn")
+          .map((c) => c.name)
+          .join(", ")
+      : "") ||
+    "N/A";
+  const productionLanguage = String(movie.language || "").trim() || "N/A";
 
   return (
     <div className="movie-detail-container">
@@ -415,14 +425,7 @@ const MovieDetail = () => {
             <h3>THÔNG TIN SẢN XUẤT</h3>
             <div className="info-item">
               <span className="info-label">ĐẠO DIỄN</span>
-              <span className="info-value">
-                {movie.cast && movie.cast.length > 0
-                  ? movie.cast
-                      .filter((c) => c.role === "Director" || c.role === "Đạo diễn")
-                      .map((c) => c.name)
-                      .join(", ") || "N/A"
-                  : "N/A"}
-              </span>
+              <span className="info-value">{productionDirector}</span>
             </div>
             <div className="info-item">
               <span className="info-label">KHỞI CHIẾU</span>
@@ -430,7 +433,7 @@ const MovieDetail = () => {
             </div>
             <div className="info-item">
               <span className="info-label">NGÔN NGỮ</span>
-              <span className="info-value">Tiếng Anh (Phụ đề Tiếng Việt)</span>
+              <span className="info-value">{productionLanguage}</span>
             </div>
             <div className="movie-detail-actions">
               <button className="btn-book-ticket">ĐẶT VÉ NGAY</button>
@@ -474,19 +477,6 @@ const MovieDetail = () => {
                     .slice(0, 10)
                     .map((person, index) => (
                       <div key={index} className="cast-item">
-                        <div className="cast-image">
-                          <img
-                            src={
-                              person.image ||
-                              "https://via.placeholder.com/150x150?text=No+Image"
-                            }
-                            alt={person.name}
-                            onError={(e) => {
-                              e.target.src =
-                                "https://via.placeholder.com/150x150?text=No+Image";
-                            }}
-                          />
-                        </div>
                         <div className="cast-details">
                           <h4 className="cast-name">{person.name}</h4>
                           <p className="cast-role">{person.role}</p>

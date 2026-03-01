@@ -1,33 +1,54 @@
 import { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FaFilm } from "react-icons/fa";
+import { FiBell, FiMapPin, FiSearch } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/Navbar.css";
-import { FaFilm } from "react-icons/fa";
-import { FiSearch, FiBell, FiMapPin } from "react-icons/fi";
 
 const Navbar = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const isShowtimesRoute = location.pathname.startsWith("/showtimes");
 
   useEffect(() => {
     const onScroll = () => {
-      // Hiện background khi scroll > 0
       setIsScrolled(window.scrollY > 0);
     };
 
-    onScroll(); // set state on initial render
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?title=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
+  const handleSearch = (event) => {
+    event.preventDefault();
+
+    if (!searchQuery.trim()) {
+      return;
     }
+
+    navigate(`/search?title=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery("");
+  };
+
+  const getAvatarLabel = () => {
+    if (!user) {
+      return "";
+    }
+
+    if (user.avatar) {
+      return null;
+    }
+
+    if (user.fullName) {
+      return user.fullName.charAt(0).toUpperCase();
+    }
+
+    return user.email.charAt(0).toUpperCase();
   };
 
   return (
@@ -39,18 +60,24 @@ const Navbar = () => {
           </span>
           CinemaHub
         </Link>
+
         <ul className="nav-links">
           <li>
-            <Link to="/">Lịch chiếu</Link>
+            <Link
+              to="/showtimes"
+              className={isShowtimesRoute ? "active" : ""}
+            >
+              {"L\u1ECBch chi\u1EBFu"}
+            </Link>
           </li>
           <li>
             <Link to="/">Phim</Link>
           </li>
           <li>
-            <Link to="/">Rạp</Link>
+            <Link to="/">{"R\u1EA1p"}</Link>
           </li>
           <li>
-            <Link to="/">Ưu đãi</Link>
+            <Link to="/">{"\u01AFu \u0111\u00E3i"}</Link>
           </li>
         </ul>
       </div>
@@ -65,15 +92,18 @@ const Navbar = () => {
             Admin
           </button>
         )}
+
         <form className="search-box" onSubmit={handleSearch}>
           <span className="search-icon">
             <FiSearch />
           </span>
           <input
             type="text"
-            placeholder="Tìm phim, rạp, diễn viên..."
+            placeholder={
+              "T\u00ECm phim, r\u1EA1p, di\u1EC5n vi\u00EAn..."
+            }
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
           />
         </form>
 
@@ -85,6 +115,7 @@ const Navbar = () => {
             >
               <FiBell />
             </div>
+
             <div
               className="profile-avatar-nav"
               onClick={() => navigate("/profile")}
@@ -93,16 +124,14 @@ const Navbar = () => {
                 {user.avatar ? (
                   <img src={user.avatar} alt="Avatar" />
                 ) : (
-                  user.fullName
-                  ? user.fullName.charAt(0).toUpperCase()
-                    : user.email.charAt(0).toUpperCase()
+                  getAvatarLabel()
                 )}
               </div>
             </div>
           </>
         ) : (
           <Link to="/login" className="btn-login">
-            Đăng nhập
+            {"\u0110\u0103ng nh\u1EADp"}
           </Link>
         )}
 
@@ -110,7 +139,7 @@ const Navbar = () => {
           <span className="map-icon">
             <FiMapPin />
           </span>
-          Hà Nội
+          {"H\u00E0 N\u1ED9i"}
         </div>
       </div>
     </nav>

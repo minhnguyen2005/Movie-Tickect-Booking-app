@@ -182,14 +182,13 @@ export const getShowtimesByMovie = async (req, res) => {
     });
 
     // Combine MongoDB và MySQL showtimes
-    const allShowtimes = [
-      ...mongoShowtimes.map((st) => {
+    const allShowtimes = isMysqlMovie
+      ? formattedMysqlShowtimes
+      : mongoShowtimes.map((st) => {
         const showtimeObj = st.toObject();
         showtimeObj.bookedSeats = bookedSeatsMap[st._id.toString()] || [];
         return showtimeObj;
-      }),
-      ...formattedMysqlShowtimes,
-    ];
+      });
 
     // Nhóm theo rạp
     const groupedByTheater = {};

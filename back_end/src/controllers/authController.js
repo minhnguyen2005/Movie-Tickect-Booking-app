@@ -146,39 +146,50 @@ export const createAdmin = async (req, res) => {
 // Đăng nhập
 export const login = async (req, res) => {
   try {
-    // Validation với yup
-    const validatedData = await loginSchema.validate(req.body);
+    let validatedData;
+    try {
+      validatedData = await loginSchema.validate(req.body, {
+        abortEarly: false,
+      });
+    } catch (validationError) {
+      return res.status(200).json({
+        success: false,
+        code: "INVALID_CREDENTIALS",
+        message: "Sai email hoặc mật khẩu",
+      });
+    }
 
     const { email, password } = validatedData;
+    const invalidLoginMessage = "Sai email hoặc mật khẩu";
 
-    // Tìm user và lấy password để so sánh
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(200).json({
         success: false,
-        message: "Email hoặc mật khẩu không đúng",
+        code: "INVALID_CREDENTIALS",
+        message: invalidLoginMessage,
       });
     }
 
     if (!user.isActive) {
-      return res.status(401).json({
+      return res.status(200).json({
         success: false,
+        code: "ACCOUNT_LOCKED",
         message: "Tài khoản đã bị khóa",
       });
     }
 
-    // So sánh password
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(401).json({
+      return res.status(200).json({
         success: false,
-        message: "Email hoặc mật khẩu không đúng",
+        code: "INVALID_CREDENTIALS",
+        message: invalidLoginMessage,
       });
     }
 
-    // Tạo token
     const token = generateToken(user._id);
 
     res.status(200).json({
@@ -242,38 +253,31 @@ export const getCurrentUser = async (req, res) => {
 // Quên mật khẩu
 export const forgotPassword = async (req, res) => {
   try {
-    // Validation với yup
     const validatedData = await forgotPasswordSchema.validate(req.body);
 
     const { email } = validatedData;
 
-    // Tìm user
     const user = await User.findOne({ email });
 
     if (!user) {
-      // Trả về success để không tiết lộ email có tồn tại hay không
       return res.status(200).json({
         success: true,
         message: "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu",
       });
     }
 
-    // Tạo reset token
     const resetToken = generateResetToken();
-    const resetPasswordExpire = Date.now() + 60 * 60 * 1000; // 1 giờ
+    const resetPasswordExpire = Date.now() + 60 * 60 * 1000;
 
-    // Lưu token vào database
     user.resetPasswordToken = resetToken;
     user.resetPasswordExpire = resetPasswordExpire;
     await user.save({ validateBeforeSave: false });
 
-    // Tạo reset URL
     const resetUrl = `${
       process.env.FRONTEND_URL || "http://localhost:5173"
     }/reset-password/${resetToken}`;
 
     try {
-      // Gửi email
       await sendResetPasswordEmail(user.email, resetUrl);
 
       res.status(200).json({
@@ -281,12 +285,10 @@ export const forgotPassword = async (req, res) => {
         message: "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu",
       });
     } catch (emailError) {
-      // Nếu gửi email thất bại, xóa token đã lưu
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save({ validateBeforeSave: false });
 
-      // Kiểm tra xem có phải lỗi do chưa cấu hình email không
       const isConfigError = emailError.message.includes("chưa được cấu hình");
 
       return res.status(isConfigError ? 503 : 500).json({
@@ -306,12 +308,10 @@ export const forgotPassword = async (req, res) => {
 // Reset mật khẩu
 export const resetPassword = async (req, res) => {
   try {
-    // Validation với yup
     const validatedData = await resetPasswordSchema.validate(req.body);
 
     const { token, password } = validatedData;
 
-    // Tìm user với token và kiểm tra token chưa hết hạn
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpire: { $gt: Date.now() },
@@ -324,10 +324,8 @@ export const resetPassword = async (req, res) => {
       });
     }
 
-    // Hash password mới
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Cập nhật password và xóa reset token
     user.password = hashedPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
@@ -345,12 +343,11 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Lấy danh sách wishlist của user (các phim muốn xem trong tương lai)
 export const getWishlist = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).populate(
       "wishlist",
-      "title poster genre duration ageRating rating"
+      "title poster genre duration ageRating rating",
     );
 
     if (!user) {
@@ -400,7 +397,7 @@ export const addToWishlist = async (req, res) => {
       {
         $addToSet: { wishlist: movieId }, // không thêm trùng
       },
-      { new: true }
+      { new: true },
     ).populate("wishlist", "title poster genre duration ageRating rating");
 
     return res.status(200).json({
@@ -436,7 +433,7 @@ export const removeFromWishlist = async (req, res) => {
       {
         $pull: { wishlist: movieId },
       },
-      { new: true }
+      { new: true },
     ).populate("wishlist", "title poster genre duration ageRating rating");
 
     if (!user) {

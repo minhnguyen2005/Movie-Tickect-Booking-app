@@ -1,8 +1,7 @@
 /* Login.css - Không dùng backdrop-filter */
 .login-page {
   /* Background tối */
-  background: url("https://via.placeholder.com/1920x1080/222/000?text=Cinema+Background")
-    center/cover no-repeat;
+  background: #000;
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -84,7 +83,7 @@
 .input-wrapper input {
   width: 100%;
   padding: 11px 40px; /* padding tương tự dark-input, chừa chỗ cho icon */
-  background: #0f0f0f;
+  background: #000;
   border: 1px solid #333;
   border-radius: 8px;
   color: white;
@@ -217,6 +216,16 @@
   text-decoration: underline;
 }
 
+.login-inline-error {
+  display: block;
+  color: #ff4b4b;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 8px 0 14px;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
 .error-alert,
 .error-message {
   background-color: rgba(229, 9, 20, 0.1);
@@ -293,7 +302,7 @@
 .register-form .dark-input {
   width: 100%;
   padding: 11px 12px;
-  background: #0f0f0f;
+  background: #000;
   border: 1px solid #333;
   border-radius: 8px;
   color: #fff;

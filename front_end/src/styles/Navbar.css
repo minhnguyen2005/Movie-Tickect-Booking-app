@@ -4,7 +4,7 @@
   align-items: center;
   padding: 8px 18px;
   min-height: 60px;
-  background: transparent;
+  background: #000;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   position: fixed;
@@ -13,7 +13,7 @@
   width: 100%;
   z-index: 1000;
   box-sizing: border-box;
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   box-shadow: none;
   transition: background 0.3s ease, box-shadow 0.3s ease,
     border-color 0.3s ease, -webkit-backdrop-filter 0.3s ease,
@@ -21,11 +21,11 @@
 }
 
 .navbar.scrolled {
-  background: rgba(10, 12, 18, 0.95);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: #000;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 /* Phần bên trái */
@@ -67,6 +67,10 @@
   letter-spacing: 0.2px;
 }
 .nav-links li a:hover {
+  color: var(--primary-color);
+}
+
+.nav-links li a.active {
   color: var(--primary-color);
 }
 

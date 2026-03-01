@@ -1,6 +1,6 @@
 /* Register.css */
 .register-container {
-  background-color: #121010;
+  background-color: #000;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -80,7 +80,7 @@
 .register-form-container {
   flex: 0.8;
   /* KHÔNG DÙNG BACKDROP FILTER */
-  background-color: #1a1a1a; /* Nền đặc màu xám tối */
+  background-color: #000; /* Đồng bộ nền đen */
   padding: 40px;
   border-radius: 24px;
   border: 1px solid #333;
@@ -104,7 +104,7 @@
 .dark-input {
   width: 100%;
   padding: 12px;
-  background: #0f0f0f;
+  background: #000;
   border: 1px solid #333;
   border-radius: 8px;
   color: white;

@@ -8,12 +8,48 @@ import {
   FaTheaterMasks,
   FaCommentDots,
   FaChartLine,
+  FaUsers,
   FaUserCircle,
   FaSignOutAlt,
   FaBell,
   FaCog,
 } from "react-icons/fa";
 import "../styles/Admin.css";
+
+const createInitialMovieForm = () => ({
+  title: "",
+  description: "",
+  duration: 120,
+  release_date: "",
+  age_rating: "K",
+  poster_url: "",
+  banner_url: "",
+  trailer_url: "",
+  director: "",
+  language: "",
+  genre: "",
+  cast: "",
+  is_showing: 1,
+});
+
+const parseCommaSeparatedValues = (value) =>
+  String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const formatCastForInput = (cast) =>
+  Array.isArray(cast)
+    ? cast
+        .map((person) =>
+          typeof person === "string" ? person : String(person?.name || ""),
+        )
+        .map((name) => name.trim())
+        .filter(Boolean)
+        .join(", ")
+    : typeof cast === "string"
+      ? cast
+      : "";
 
 const Admin = () => {
   const { user } = useContext(AuthContext);
@@ -23,23 +59,15 @@ const Admin = () => {
   const [loadingMovies, setLoadingMovies] = useState(false);
   const [savingMovie, setSavingMovie] = useState(false);
   const [editingMovieId, setEditingMovieId] = useState(null);
-  const [movieForm, setMovieForm] = useState({
-    title: "",
-    description: "",
-    duration: 120,
-    release_date: "",
-    age_rating: "K",
-    poster_url: "",
-    banner_url: "",
-    trailer_url: "",
-    is_showing: 1,
-  });
+  const [movieIdSortOrder, setMovieIdSortOrder] = useState("desc");
+  const [movieForm, setMovieForm] = useState(createInitialMovieForm);
 
   // Showtimes state
   const [showtimes, setShowtimes] = useState([]);
   const [loadingShowtimes, setLoadingShowtimes] = useState(false);
   const [savingShowtime, setSavingShowtime] = useState(false);
   const [editingShowtimeId, setEditingShowtimeId] = useState(null);
+  const [showtimeIdSortOrder, setShowtimeIdSortOrder] = useState("desc");
   const [showtimeForm, setShowtimeForm] = useState({
     movie_id: "",
     theater_id: "",
@@ -49,6 +77,8 @@ const Admin = () => {
     total_seats: 100,
     is_active: 1,
   });
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [theaters, setTheaters] = useState([]);
   const [theaterRevenue, setTheaterRevenue] = useState([]);
   const ticketSummary = showtimes.reduce(
@@ -76,6 +106,22 @@ const Admin = () => {
     totalTickets: ticketSummary.totalTickets,
     totalMovies: movies.length,
   };
+  const sortedMovies = [...movies].sort((firstMovie, secondMovie) => {
+    const firstId = Number(firstMovie.id) || 0;
+    const secondId = Number(secondMovie.id) || 0;
+
+    return movieIdSortOrder === "asc" ? firstId - secondId : secondId - firstId;
+  });
+  const sortedShowtimes = [...showtimes].sort(
+    (firstShowtime, secondShowtime) => {
+      const firstId = Number(firstShowtime.id) || 0;
+      const secondId = Number(secondShowtime.id) || 0;
+
+      return showtimeIdSortOrder === "asc"
+        ? firstId - secondId
+        : secondId - firstId;
+    },
+  );
 
   const ticketsSoldByMovie = ticketSummary.byMovie;
 
@@ -103,6 +149,8 @@ const Admin = () => {
       fetchTheaters();
     } else if (activeTab === "theaters") {
       fetchTheaters();
+    } else if (activeTab === "users") {
+      fetchUsers();
     }
   }, [activeTab]);
 
@@ -164,6 +212,32 @@ const Admin = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    try {
+      setLoadingUsers(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Không có token, vui lòng đăng nhập");
+      }
+      const response = await fetch(API_ENDPOINTS.ADMIN.USERS.LIST, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      if (data.success && Array.isArray(data.data)) {
+        setUsers(data.data);
+      } else {
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách người dùng:", error);
+      setUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const handleMovieInputChange = (e) => {
     const { name, value } = e.target;
     setMovieForm((prev) => ({
@@ -174,17 +248,7 @@ const Admin = () => {
 
   const resetMovieForm = () => {
     setEditingMovieId(null);
-    setMovieForm({
-      title: "",
-      description: "",
-      duration: 120,
-      release_date: "",
-      age_rating: "K",
-      poster_url: "",
-      banner_url: "",
-      trailer_url: "",
-      is_showing: 1,
-    });
+    setMovieForm(createInitialMovieForm());
   };
 
   const handleEditMovie = (movie) => {
@@ -198,6 +262,12 @@ const Admin = () => {
       poster_url: movie.poster_url || "",
       banner_url: movie.banner_url || "",
       trailer_url: movie.trailer_url || "",
+      director: movie.director || "",
+      language: movie.language || "",
+      genre: Array.isArray(movie.genre)
+        ? movie.genre.join(", ")
+        : movie.genre || "",
+      cast: formatCastForInput(movie.cast),
       is_showing: movie.is_showing ?? 1,
     });
     setActiveTab("movies");
@@ -214,6 +284,15 @@ const Admin = () => {
 
       const payload = {
         ...movieForm,
+        title: movieForm.title.trim(),
+        description: movieForm.description.trim(),
+        poster_url: movieForm.poster_url.trim(),
+        banner_url: movieForm.banner_url.trim(),
+        trailer_url: movieForm.trailer_url.trim(),
+        director: movieForm.director.trim(),
+        language: movieForm.language.trim(),
+        genre: parseCommaSeparatedValues(movieForm.genre),
+        cast: parseCommaSeparatedValues(movieForm.cast),
         duration: Number(movieForm.duration) || 0,
         is_showing: Number(movieForm.is_showing) ? 1 : 0,
       };
@@ -269,6 +348,14 @@ const Admin = () => {
       console.error("Lỗi khi xóa phim:", error);
       alert(error.message || "Có lỗi xảy ra khi xóa phim");
     }
+  };
+
+  const toggleMovieIdSort = () => {
+    setMovieIdSortOrder((current) => (current === "asc" ? "desc" : "asc"));
+  };
+
+  const toggleShowtimeIdSort = () => {
+    setShowtimeIdSortOrder((current) => (current === "asc" ? "desc" : "asc"));
   };
 
   // Showtimes functions
@@ -507,6 +594,13 @@ const Admin = () => {
               <FaTheaterMasks />
               <span>Quản lý rạp</span>
             </button>
+            <button
+              className={`nav-item ${activeTab === "users" ? "active" : ""}`}
+              onClick={() => setActiveTab("users")}
+            >
+              <FaUsers />
+              <span>Tài khoản người dùng</span>
+            </button>
 
             <div className="nav-section-title">BÁO CÁO</div>
             <button
@@ -739,6 +833,48 @@ const Admin = () => {
                           </select>
                         </label>
                       </div>
+                      <div className="form-row">
+                        <label>
+                          Đạo diễn
+                          <input
+                            type="text"
+                            name="director"
+                            value={movieForm.director}
+                            onChange={handleMovieInputChange}
+                            placeholder="Tên đạo diễn"
+                          />
+                        </label>
+                        <label>
+                          Ngôn ngữ
+                          <input
+                            type="text"
+                            name="language"
+                            value={movieForm.language}
+                            onChange={handleMovieInputChange}
+                            placeholder="Tiếng Việt, Tiếng Anh..."
+                          />
+                        </label>
+                      </div>
+                      <label>
+                        Thể loại
+                        <input
+                          type="text"
+                          name="genre"
+                          value={movieForm.genre}
+                          onChange={handleMovieInputChange}
+                          placeholder="Hành động, Phiêu lưu, Hài hước..."
+                        />
+                      </label>
+                      <label>
+                        Diễn viên
+                        <textarea
+                          name="cast"
+                          value={movieForm.cast}
+                          onChange={handleMovieInputChange}
+                          rows={3}
+                          placeholder="Tên diễn viên"
+                        />
+                      </label>
                       <label>
                         Poster URL
                         <input
@@ -800,7 +936,23 @@ const Admin = () => {
                         <table>
                           <thead>
                             <tr>
-                              <th>ID</th>
+                              <th>
+                                <button
+                                  type="button"
+                                  className="movie-sort-trigger"
+                                  onClick={toggleMovieIdSort}
+                                  title={`Sap xep ID ${
+                                    movieIdSortOrder === "asc"
+                                      ? "giam dan"
+                                      : "tang dan"
+                                  }`}
+                                >
+                                  <span>ID</span>
+                                  <span aria-hidden="true">
+                                    {movieIdSortOrder === "asc" ? "↑" : "↓"}
+                                  </span>
+                                </button>
+                              </th>
                               <th>Tên phim</th>
                               <th>Khởi chiếu</th>
                               <th>Thời lượng</th>
@@ -809,7 +961,7 @@ const Admin = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {movies.map((m) => (
+                            {sortedMovies.map((m) => (
                               <tr key={m.id}>
                                 <td>{m.id}</td>
                                 <td>{m.title}</td>
@@ -852,6 +1004,73 @@ const Admin = () => {
                     Tab quản lý rạp sẽ dùng các endpoint `/api/admin/theaters`.
                     Có thể thêm form và bảng tương tự Movies.
                   </p>
+                </div>
+              )}
+
+              {activeTab === "users" && (
+                <div className="admin-users">
+                  <div className="admin-users-card">
+                    <div className="admin-card-header">
+                      <h2>Danh sách người dùng đã đăng ký</h2>
+                      <span className="badge-muted">
+                        {users.length.toLocaleString("vi-VN")} tài khoản
+                      </span>
+                    </div>
+                    {loadingUsers ? (
+                      <p>Đang tải danh sách người dùng...</p>
+                    ) : users.length === 0 ? (
+                      <p>Chưa có tài khoản nào được đăng ký.</p>
+                    ) : (
+                      <div className="admin-users-table-wrap">
+                        <table className="admin-users-table">
+                          <thead>
+                            <tr>
+                              <th>STT</th>
+                              <th>Họ tên</th>
+                              <th>Email</th>
+                              <th>Số điện thoại</th>
+                              <th>Vai trò</th>
+                              <th>Trạng thái</th>
+                              <th>Ngày đăng ký</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {users.map((account, index) => (
+                              <tr key={account.id || account.email || index}>
+                                <td>{index + 1}</td>
+                                <td>{account.fullName || "-"}</td>
+                                <td>{account.email || "-"}</td>
+                                <td>{account.phone || "-"}</td>
+                                <td>
+                                  <span
+                                    className={`role-badge ${
+                                      account.role === "admin"
+                                        ? "role-admin"
+                                        : "role-user"
+                                    }`}
+                                  >
+                                    {account.role === "admin"
+                                      ? "Admin"
+                                      : "Người dùng"}
+                                  </span>
+                                </td>
+                                <td>
+                                  {account.isActive ? "Hoạt động" : "Tạm khóa"}
+                                </td>
+                                <td>
+                                  {account.createdAt
+                                    ? new Date(
+                                        account.createdAt,
+                                      ).toLocaleString("vi-VN")
+                                    : "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -990,7 +1209,23 @@ const Admin = () => {
                         <table>
                           <thead>
                             <tr>
-                              <th>ID</th>
+                              <th>
+                                <button
+                                  type="button"
+                                  className="movie-sort-trigger"
+                                  onClick={toggleShowtimeIdSort}
+                                  title={`Sap xep ID ${
+                                    showtimeIdSortOrder === "asc"
+                                      ? "giam dan"
+                                      : "tang dan"
+                                  }`}
+                                >
+                                  <span>ID</span>
+                                  <span aria-hidden="true">
+                                    {showtimeIdSortOrder === "asc" ? "↑" : "↓"}
+                                  </span>
+                                </button>
+                              </th>
                               <th>Phim</th>
                               <th>Rạp</th>
                               <th>Ngày</th>
@@ -1002,7 +1237,7 @@ const Admin = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {showtimes.map((st) => (
+                            {sortedShowtimes.map((st) => (
                               <tr key={st.id}>
                                 <td>{st.id}</td>
                                 <td>{st.movie_title || "-"}</td>

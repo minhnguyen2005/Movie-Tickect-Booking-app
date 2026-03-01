@@ -1,6 +1,27 @@
-// API Configuration
-// Có thể thay đổi port bằng cách tạo file .env với VITE_API_URL=http://localhost:5137
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5137";
+const DEFAULT_API_BASE_URL = "http://localhost:5137";
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim();
+
+const normalizeApiBaseUrl = (value) => {
+  if (!value) return DEFAULT_API_BASE_URL;
+
+  try {
+    const parsed = new URL(value);
+    const isLocalFrontendDevPort =
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") &&
+      parsed.port === "5173";
+
+    if (isLocalFrontendDevPort) {
+      return DEFAULT_API_BASE_URL;
+    }
+
+    const normalizedPath = parsed.pathname.replace(/\/+$/, "");
+    return `${parsed.protocol}//${parsed.host}${normalizedPath}`;
+  } catch {
+    return DEFAULT_API_BASE_URL;
+  }
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(rawApiUrl);
 
 export const API_ENDPOINTS = {
   // Auth endpoints
@@ -43,11 +64,15 @@ export const API_ENDPOINTS = {
     GET_MY_BOOKINGS: `${API_BASE_URL}/api/bookings/my-bookings`,
     GET_STATS: `${API_BASE_URL}/api/bookings/stats`,
     GET_BY_ID: (bookingId) => `${API_BASE_URL}/api/bookings/${bookingId}`,
-    UPDATE_PAYMENT: (bookingId) => `${API_BASE_URL}/api/bookings/${bookingId}/payment`,
+    UPDATE_PAYMENT: (bookingId) =>
+      `${API_BASE_URL}/api/bookings/${bookingId}/payment`,
     CANCEL: (bookingId) => `${API_BASE_URL}/api/bookings/${bookingId}`,
   },
   // Admin (MySQL) endpoints
   ADMIN: {
+    USERS: {
+      LIST: `${API_BASE_URL}/api/admin/users`,
+    },
     MOVIES: {
       LIST: `${API_BASE_URL}/api/admin/movies`,
       CREATE: `${API_BASE_URL}/api/admin/movies`,
@@ -70,4 +95,3 @@ export const API_ENDPOINTS = {
 };
 
 export default API_BASE_URL;
-

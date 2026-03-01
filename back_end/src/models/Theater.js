@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const theaterSchema = new mongoose.Schema(
   {
+    mysqlTheaterId: {
+      type: Number,
+      default: null,
+      index: true,
+    },
     name: {
       type: String,
       required: true,

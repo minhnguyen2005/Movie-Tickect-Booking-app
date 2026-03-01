@@ -22,7 +22,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-// Tăng limit để có thể nhận ảnh base64 (10MB)
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cors());
@@ -38,10 +37,8 @@ app.use("/api/reviews", reviewRouter);
 app.use("/api/bookings", bookingRouter);
 
 // API admin sử dụng MySQL để quản lý phim, rạp, lịch chiếu
-// (dùng cho trang admin sau này)
 app.use("/api/admin", adminMysqlRouter);
 
-// Health check
 app.get("/", (req, res) => {
   res.json({
     success: true,

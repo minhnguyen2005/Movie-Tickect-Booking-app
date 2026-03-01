@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const movieSchema = new mongoose.Schema(
   {
+    mysqlMovieId: {
+      type: Number,
+      default: null,
+      index: true,
+    },
     title: {
       type: String,
       required: true,
@@ -13,7 +18,17 @@ const movieSchema = new mongoose.Schema(
     },
     trailer: {
       type: String,
-      required: true, // YouTube URL hoặc video URL
+      default: "",
+    },
+    director: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    language: {
+      type: String,
+      default: "",
+      trim: true,
     },
     cast: [
       {
@@ -23,7 +38,7 @@ const movieSchema = new mongoose.Schema(
         },
         role: {
           type: String,
-          required: true, // Ví dụ: "Đạo diễn", "Diễn viên", "Nhà sản xuất"
+          required: true,
         },
         image: {
           type: String,
@@ -40,11 +55,11 @@ const movieSchema = new mongoose.Schema(
     },
     poster: {
       type: String,
-      required: true, // URL ảnh poster
+      default: "",
     },
     bannerImage: {
       type: String,
-      default: "", // URL ảnh banner riêng (khác với poster)
+      default: "",
     },
     genre: [
       {
@@ -54,7 +69,7 @@ const movieSchema = new mongoose.Schema(
     ],
     duration: {
       type: Number,
-      required: true, // Thời lượng phim tính bằng phút
+      required: true,
     },
     ageRating: {
       type: String,
@@ -85,4 +100,3 @@ const movieSchema = new mongoose.Schema(
 const Movie = mongoose.model("Movie", movieSchema);
 
 export default Movie;
-

@@ -9,6 +9,7 @@ const Login = ({ initialMode = "login" }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginCredentialError, setLoginCredentialError] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [registerData, setRegisterData] = useState({
     fullName: "",
@@ -24,6 +25,7 @@ const Login = ({ initialMode = "login" }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMessage("");
+    setLoginCredentialError("");
     setIsLoading(true);
     setRegisterError("");
     try {
@@ -33,16 +35,27 @@ const Login = ({ initialMode = "login" }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (data.success && data.data) {
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+      if (response.ok && data.success && data.data) {
         login(data.data.user, data.data.token);
         navigate("/");
       } else {
-        setErrorMessage(data.message || "Đăng nhập thất bại");
+        const loginFailMessage =
+          (typeof data.message === "string" && data.message.trim()) ||
+          (response.status === 401
+            ? "Email hoặc mật khẩu không đúng."
+            : "Đăng nhập thất bại.");
+        setLoginCredentialError(loginFailMessage);
       }
     } catch (error) {
       setErrorMessage("Lỗi kết nối Server.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,6 +143,10 @@ const Login = ({ initialMode = "login" }) => {
                     <span className="icon-right"></span>
                   </div>
                 </div>
+
+                {loginCredentialError && (
+                  <p className="login-inline-error">{loginCredentialError}</p>
+                )}
 
                 {errorMessage && (
                   <div className="error-alert">{errorMessage}</div>
