@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import http from "http";
+import mysql from "mysql2/promise";
 import { fileURLToPath } from "url";
 import connectDB from "./src/services/database.js";
 import authRouter from "./src/routers/authRouter.js";
@@ -38,8 +39,6 @@ app.use("/api/bookings", bookingRouter);
 
 // API admin sử dụng MySQL để quản lý phim, rạp, lịch chiếu
 app.use("/api/admin", adminMysqlRouter);
-
-const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
