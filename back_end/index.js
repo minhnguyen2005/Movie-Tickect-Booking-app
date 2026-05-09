@@ -16,7 +16,6 @@ import { initSocket } from "./src/services/socket.js";
 const app = express();
 const server = http.createServer(app);
 dotenv.config();
-const cors = require("cors");
 
 // Lấy __dirname trong ES modules
 const __filename = fileURLToPath(import.meta.url);
