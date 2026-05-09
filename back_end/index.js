@@ -36,8 +36,6 @@ app.use("/api/movies", movieRouter);
 app.use("/api/showtimes", showtimeRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/bookings", bookingRouter);
-
-// API admin sử dụng MySQL để quản lý phim, rạp, lịch chiếu
 app.use("/api/admin", adminMysqlRouter);
 
 const pool = mysql.createPool({
@@ -51,7 +49,8 @@ const pool = mysql.createPool({
   queueLimit: 0,
 });
 
-module.exports = pool;
+export default pool;
+// hoặc export default router;
 app.get("/", (req, res) => {
   res.json({
     success: true,
